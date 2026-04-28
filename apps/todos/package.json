@@ -1,0 +1,10 @@
+{
+  "name": "todos",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc",
+    "dev": "node --watch serve.ts",
+    "start": "node serve.ts"
+  }
+}
