@@ -1,3 +1,5 @@
+import { DatabaseSync } from "node:sqlite";
+
 type Note = {
   id: string;
   title: string;
@@ -5,14 +7,34 @@ type Note = {
   createdAt: string;
 };
 
-let notes: Array<Note> = [
-  {
-    id: crypto.randomUUID(),
-    title: "Welcome",
-    body: "This is your first note.",
-    createdAt: new Date().toISOString(),
-  },
-];
+const dbPath = new URL("notes.db", import.meta.url).pathname;
+const db = new DatabaseSync(dbPath);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS notes (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL DEFAULT '',
+    createdAt TEXT NOT NULL
+  )
+`);
+
+const listStmt = db.prepare("SELECT id, title, body, createdAt FROM notes ORDER BY createdAt");
+const getStmt = db.prepare("SELECT id, title, body, createdAt FROM notes WHERE id = ?");
+const insertStmt = db.prepare("INSERT INTO notes (id, title, body, createdAt) VALUES (?, ?, ?, ?)");
+const updateTitleStmt = db.prepare("UPDATE notes SET title = ? WHERE id = ?");
+const updateBodyStmt = db.prepare("UPDATE notes SET body = ? WHERE id = ?");
+const deleteStmt = db.prepare("DELETE FROM notes WHERE id = ?");
+
+function seedIfEmpty() {
+  const rows = listStmt.all();
+  if (rows.length > 0) {
+    return;
+  }
+  insertStmt.run(crypto.randomUUID(), "Welcome", "This is your first note.", new Date().toISOString());
+}
+
+seedIfEmpty();
 
 function jsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -79,7 +101,7 @@ async function handleRequest(request: Request): Promise<Response | null> {
   }
 
   if (matched.route === "list") {
-    return jsonResponse(notes);
+    return jsonResponse(listStmt.all());
   }
 
   if (matched.route === "create") {
@@ -93,12 +115,12 @@ async function handleRequest(request: Request): Promise<Response | null> {
       body: noteBody ?? "",
       createdAt: new Date().toISOString(),
     };
-    notes = [...notes, note];
+    insertStmt.run(note.id, note.title, note.body, note.createdAt);
     return jsonResponse(note, 201);
   }
 
   if (matched.route === "get") {
-    const note = notes.find((n) => n.id === matched.id);
+    const note = getStmt.get(matched.id) as Note | undefined;
     if (!note) {
       return emptyResponse(404);
     }
@@ -106,24 +128,30 @@ async function handleRequest(request: Request): Promise<Response | null> {
   }
 
   if (matched.route === "update") {
-    const index = notes.findIndex((n) => n.id === matched.id);
-    if (index === -1) {
+    const existing = getStmt.get(matched.id) as Note | undefined;
+    if (!existing) {
       return emptyResponse(404);
     }
     const patch = (await request.json()) as {
       title?: string;
       body?: string;
     };
-    const updated: Note = { ...notes[index], ...patch };
-    notes = notes.with(index, updated);
+    if (patch.title !== undefined) {
+      updateTitleStmt.run(patch.title, matched.id);
+    }
+    if (patch.body !== undefined) {
+      updateBodyStmt.run(patch.body, matched.id);
+    }
+    const updated = getStmt.get(matched.id) as Note;
     return jsonResponse(updated);
   }
 
   if (matched.route === "delete") {
-    if (!notes.some((n) => n.id === matched.id)) {
+    const existing = getStmt.get(matched.id) as Note | undefined;
+    if (!existing) {
       return emptyResponse(404);
     }
-    notes = notes.filter((n) => n.id !== matched.id);
+    deleteStmt.run(matched.id);
     return emptyResponse(204);
   }
 
