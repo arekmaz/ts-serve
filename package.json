@@ -4,11 +4,8 @@
   "type": "module",
   "exports": "./src/index.ts",
   "devDependencies": {
-    "@tanstack/solid-query": "5.99.0",
     "@types/node": "25.6.0",
-    "htm": "3.1.1",
     "prettier": "3.8.2",
-    "solid-js": "1.9.5",
     "typescript": "6.0.2"
   },
   "scripts": {

@@ -7,8 +7,7 @@
     "noEmit": true,
     "erasableSyntaxOnly": true,
     "allowImportingTsExtensions": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "types": ["node"]
+    "lib": ["ESNext", "DOM", "DOM.Iterable"]
   },
   "include": ["frontend/src"]
 }
