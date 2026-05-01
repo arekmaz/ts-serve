@@ -1954,4 +1954,94 @@ describe("eraseTsTypes", () => {
       expectErasure(input, input);
     });
   });
+
+  describe("amaro parity", () => {
+    describe("class access modifiers", () => {
+      it("erases private on constructor", () => {
+        expectErasure(
+          `class Foo { private constructor() {} }`,
+          `class Foo {         constructor() {} }`,
+        );
+      });
+
+      it("erases public on method", () => {
+        expectErasure(
+          `class Foo { public greet() {} }`,
+          `class Foo {        greet() {} }`,
+        );
+      });
+
+      it("erases protected on method", () => {
+        expectErasure(
+          `class Foo { protected greet() {} }`,
+          `class Foo {           greet() {} }`,
+        );
+      });
+
+      it("erases multiple modifiers on different members", () => {
+        expectErasure(
+          `class C { private a() {} public b() {} protected c() {} }`,
+          `class C {         a() {}        b() {}           c() {} }`,
+        );
+      });
+
+      it("erases modifier on private field", () => {
+        expectErasure(
+          `class C { private #x = 1 }`,
+          `class C {         #x = 1 }`,
+        );
+      });
+
+      it("does not erase private after dot", () => {
+        const input = `obj.private`;
+        expectErasure(input, input);
+      });
+
+      it("does not erase public outside class", () => {
+        const input = `const public = 1`;
+        expectErasure(input, input);
+      });
+    });
+
+    describe("generic arrow after return/throw/yield", () => {
+      it("erases generic arrow in return statement", () => {
+        expectErasure(
+          `function f() { return <T>(x: T)=>x }`,
+          `function f() { return    (x   )=>x }`,
+        );
+      });
+
+      it("erases generic arrow in throw statement", () => {
+        expectErasure(
+          `function f() { throw <T>(x: T)=>x }`,
+          `function f() { throw    (x   )=>x }`,
+        );
+      });
+
+      it("erases generic arrow in yield statement", () => {
+        expectErasure(
+          `function* f() { yield <T>(x: T)=>x }`,
+          `function* f() { yield    (x   )=>x }`,
+        );
+      });
+    });
+
+    describe("nested generic type parameters", () => {
+      it("erases nested generics in constructor call", () => {
+        expectErasure(
+          `const w = new Wrapper<string>(x)`,
+          `const w = new Wrapper        (x)`,
+        );
+      });
+    });
+
+    describe("method overload signatures", () => {
+      it("erases overload signatures and keeps implementation", () => {
+        expectErasure(
+          `class C { foo(x: string): string; foo(x: number): number; foo(x: string | number): string | number { return x } }`,
+          `class C { foo(x        )        ; foo(x        )        ; foo(x                 )                  { return x } }`,
+        );
+      });
+    });
+  });
 });

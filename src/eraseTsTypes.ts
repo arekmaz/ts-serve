@@ -906,6 +906,26 @@ export function eraseTsTypes(source: string): string {
       continue;
     }
 
+    if (
+      (matchWord(source, pos, "public") ||
+        matchWord(source, pos, "private") ||
+        matchWord(source, pos, "protected")) &&
+      !isAfterDot(source, pos) &&
+      braceDepth > 0
+    ) {
+      const kw = matchWord(source, pos, "public")
+        ? "public"
+        : matchWord(source, pos, "private")
+          ? "private"
+          : "protected";
+      const afterKw = skipWhitespace(source, pos + kw.length);
+      if (afterKw < len && (isIdentChar(source[afterKw]) || source[afterKw] === "#")) {
+        blankRange(chars, pos, pos + kw.length, false);
+        pos = pos + kw.length;
+        continue;
+      }
+    }
+
     if (matchWord(source, pos, "declare") && !isAfterDot(source, pos)) {
       const start = pos;
       const end = findStatementEnd(source, pos + 7);
