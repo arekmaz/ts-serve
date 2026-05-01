@@ -1,4 +1,4 @@
-import { ServiceMap, Effect, Layer, Ref, Schema } from "effect";
+import { Context, Effect, Layer, Ref, Schema } from "effect";
 import { HttpRouter, HttpMiddleware } from "effect/unstable/http";
 import { HttpServerRequest } from "effect/unstable/http";
 import { HttpServerResponse } from "effect/unstable/http";
@@ -22,7 +22,7 @@ const UpdateTodo = Schema.Struct({
   done: Schema.optional(Schema.Boolean),
 });
 
-const TodoStore = ServiceMap.Service<Ref.Ref<ReadonlyArray<Todo>>>("TodoStore");
+const TodoStore = Context.Service<Ref.Ref<ReadonlyArray<Todo>>>("TodoStore");
 
 const TodoStoreLive = Layer.effect(
   TodoStore,

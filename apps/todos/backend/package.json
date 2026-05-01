@@ -6,6 +6,6 @@
     "dev": "node --watch handler.ts"
   },
   "dependencies": {
-    "effect": "4.0.0-beta.38"
+    "effect": "4.0.0-beta.59"
   }
 }
