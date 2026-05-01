@@ -15,6 +15,7 @@
   "scripts": {
     "test": "vitest",
     "typecheck": "tsc",
-    "todos": "npm start --prefix apps/todos"
+    "todos": "npm start --prefix apps/todos",
+    "notes": "npm start --prefix apps/notes"
   }
 }
