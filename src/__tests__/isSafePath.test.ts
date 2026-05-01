@@ -1,28 +1,29 @@
-import { describe, it, expect } from "vitest";
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
 import { isSafePath } from "../isSafePath.ts";
 
 describe("isSafePath", () => {
   it("accepts a path within the root", () => {
-    expect(isSafePath("/srv/www", "/srv/www/index.html")).toBe(true);
+    assert.strictEqual(isSafePath("/srv/www", "/srv/www/index.html"), true);
   });
 
   it("accepts a nested path within the root", () => {
-    expect(isSafePath("/srv/www", "/srv/www/assets/style.css")).toBe(true);
+    assert.strictEqual(isSafePath("/srv/www", "/srv/www/assets/style.css"), true);
   });
 
   it("rejects a path that traverses above the root", () => {
-    expect(isSafePath("/srv/www", "/srv/etc/passwd")).toBe(false);
+    assert.strictEqual(isSafePath("/srv/www", "/srv/etc/passwd"), false);
   });
 
   it("rejects a path with .. segments", () => {
-    expect(isSafePath("/srv/www", "/srv/www/../etc/passwd")).toBe(false);
+    assert.strictEqual(isSafePath("/srv/www", "/srv/www/../etc/passwd"), false);
   });
 
   it("accepts the root directory itself", () => {
-    expect(isSafePath("/srv/www", "/srv/www")).toBe(true);
+    assert.strictEqual(isSafePath("/srv/www", "/srv/www"), true);
   });
 
   it("rejects a path that is a sibling prefix", () => {
-    expect(isSafePath("/srv/www", "/srv/www-other/file.txt")).toBe(false);
+    assert.strictEqual(isSafePath("/srv/www", "/srv/www-other/file.txt"), false);
   });
 });

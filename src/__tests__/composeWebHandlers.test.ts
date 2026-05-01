@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
 import { composeWebHandlers } from "../composeWebHandlers.ts";
 import type { WebMiddleware } from "../composeWebHandlers.ts";
 
@@ -9,8 +10,8 @@ describe("composeWebHandlers", () => {
     };
     const app = composeWebHandlers(handler);
     const res = await app(new Request("http://localhost/"));
-    expect(res.status).toBe(200);
-    expect(await res.text()).toBe("hello");
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(await res.text(), "hello");
   });
 
   it("returns 404 when a single handler returns null", async () => {
@@ -19,7 +20,7 @@ describe("composeWebHandlers", () => {
     };
     const app = composeWebHandlers(handler);
     const res = await app(new Request("http://localhost/"));
-    expect(res.status).toBe(404);
+    assert.strictEqual(res.status, 404);
   });
 
   it("falls through to the second handler when the first returns null", async () => {
@@ -31,8 +32,8 @@ describe("composeWebHandlers", () => {
     };
     const app = composeWebHandlers(first, second);
     const res = await app(new Request("http://localhost/"));
-    expect(res.status).toBe(200);
-    expect(await res.text()).toBe("from second");
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(await res.text(), "from second");
   });
 
   it("returns 404 when all handlers return null", async () => {
@@ -47,7 +48,7 @@ describe("composeWebHandlers", () => {
     };
     const app = composeWebHandlers(a, b, c);
     const res = await app(new Request("http://localhost/"));
-    expect(res.status).toBe(404);
+    assert.strictEqual(res.status, 404);
   });
 
   it("uses the first matching handler and skips the rest", async () => {
@@ -61,8 +62,8 @@ describe("composeWebHandlers", () => {
     };
     const app = composeWebHandlers(first, second);
     const res = await app(new Request("http://localhost/"));
-    expect(await res.text()).toBe("from first");
-    expect(secondCalled).toBe(false);
+    assert.strictEqual(await res.text(), "from first");
+    assert.strictEqual(secondCalled, false);
   });
 
   it("does not fall through when a handler returns an error response", async () => {
@@ -76,8 +77,8 @@ describe("composeWebHandlers", () => {
     };
     const app = composeWebHandlers(first, second);
     const res = await app(new Request("http://localhost/"));
-    expect(res.status).toBe(403);
-    expect(secondCalled).toBe(false);
+    assert.strictEqual(res.status, 403);
+    assert.strictEqual(secondCalled, false);
   });
 
   it("passes the request through to each handler", async () => {
@@ -93,9 +94,9 @@ describe("composeWebHandlers", () => {
     const app = composeWebHandlers(first, second);
 
     const tsRes = await app(new Request("http://localhost/app.ts"));
-    expect(await tsRes.text()).toBe("typescript");
+    assert.strictEqual(await tsRes.text(), "typescript");
 
     const otherRes = await app(new Request("http://localhost/style.css"));
-    expect(await otherRes.text()).toBe("static");
+    assert.strictEqual(await otherRes.text(), "static");
   });
 });

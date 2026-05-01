@@ -1,10 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
 import { eraseTsTypes } from "../eraseTsTypes.ts";
 
 function expectErasure(input: string, expected: string): void {
   const result = eraseTsTypes(input);
-  expect(result.length).toBe(input.length);
-  expect(result).toBe(expected);
+  assert.strictEqual(result.length, input.length);
+  assert.strictEqual(result, expected);
 }
 
 describe("eraseTsTypes", () => {
@@ -24,7 +25,7 @@ describe("eraseTsTypes", () => {
         `export type { Config }`,
       ];
       for (const input of inputs) {
-        expect(eraseTsTypes(input).length).toBe(input.length);
+        assert.strictEqual(eraseTsTypes(input).length, input.length);
       }
     });
 
@@ -33,7 +34,7 @@ describe("eraseTsTypes", () => {
       const result = eraseTsTypes(input);
       for (let i = 0; i < input.length; i++) {
         if (input[i] === "\n") {
-          expect(result[i]).toBe("\n");
+          assert.strictEqual(result[i], "\n");
         }
       }
     });
@@ -159,8 +160,8 @@ describe("eraseTsTypes", () => {
     it("erases multiline interface preserving newlines", () => {
       const input = "interface Foo {\n  bar: string\n}";
       const result = eraseTsTypes(input);
-      expect(result[0]).toBe(";");
-      expect(result.length).toBe(input.length);
+      assert.strictEqual(result[0], ";");
+      assert.strictEqual(result.length, input.length);
       const newlines = [];
       for (let i = 0; i < input.length; i++) {
         if (input[i] === "\n") {
@@ -168,7 +169,7 @@ describe("eraseTsTypes", () => {
         }
       }
       for (const idx of newlines) {
-        expect(result[idx]).toBe("\n");
+        assert.strictEqual(result[idx], "\n");
       }
     });
 
@@ -259,9 +260,9 @@ describe("eraseTsTypes", () => {
     it("erases import type with multiple specifiers", () => {
       const input = `import type { Foo, Bar, Baz } from "./mod"`;
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result[0]).toBe(";");
-      expect(result.trim()).toBe(";");
+      assert.strictEqual(result.length, input.length);
+      assert.strictEqual(result[0], ";");
+      assert.strictEqual(result.trim(), ";");
     });
   });
 
@@ -594,36 +595,36 @@ describe("eraseTsTypes", () => {
     it("inserts semicolon prefix for erased interface", () => {
       const input = `interface Foo {}`;
       const result = eraseTsTypes(input);
-      expect(result[0]).toBe(";");
+      assert.strictEqual(result[0], ";");
     });
 
     it("inserts semicolon prefix for erased type alias", () => {
       const input = `type Foo = string`;
       const result = eraseTsTypes(input);
-      expect(result[0]).toBe(";");
+      assert.strictEqual(result[0], ";");
     });
 
     it("inserts semicolon prefix for erased import type", () => {
       const input = `import type { Foo } from "./bar"`;
       const result = eraseTsTypes(input);
-      expect(result[0]).toBe(";");
+      assert.strictEqual(result[0], ";");
     });
 
     it("inserts semicolon prefix for erased export type", () => {
       const input = `export type { Foo }`;
       const result = eraseTsTypes(input);
-      expect(result[0]).toBe(";");
+      assert.strictEqual(result[0], ";");
     });
 
     it("inserts semicolon prefix for erased declare", () => {
       const input = `declare const x: string`;
       const result = eraseTsTypes(input);
-      expect(result[0]).toBe(";");
+      assert.strictEqual(result[0], ";");
     });
 
     it("does not insert semicolon for non-statement erasures", () => {
       const result = eraseTsTypes(`const x: string = "hi"`);
-      expect(result).not.toContain(";");
+      assert.ok(!result.includes(";"));
     });
   });
 
@@ -730,17 +731,17 @@ describe("eraseTsTypes", () => {
         `}`,
       ].join("\n");
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result).toContain("items.forEach(callback)");
-      expect(result).not.toContain("Array<T>");
-      expect(result).not.toContain(": void");
+      assert.strictEqual(result.length, input.length);
+      assert.ok(result.includes("items.forEach(callback)"));
+      assert.ok(!result.includes("Array<T>"));
+      assert.ok(!result.includes(": void"));
     });
 
     it("handles interface followed by expression without ASI issue", () => {
       const input = `interface Foo {}\n;[1, 2].forEach(x => x)`;
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result).toContain(";[1, 2].forEach(x => x)");
+      assert.strictEqual(result.length, input.length);
+      assert.ok(result.includes(";[1, 2].forEach(x => x)"));
     });
   });
 
@@ -1050,25 +1051,25 @@ describe("eraseTsTypes", () => {
     it("erases conditional type in type alias", () => {
       const input = `type IsString<T> = T extends string ? true : false`;
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result[0]).toBe(";");
-      expect(result.trim()).toBe(";");
+      assert.strictEqual(result.length, input.length);
+      assert.strictEqual(result[0], ";");
+      assert.strictEqual(result.trim(), ";");
     });
 
     it("erases mapped type alias", () => {
       const input = `type Readonly<T> = { readonly [K in keyof T]: T[K] }`;
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result[0]).toBe(";");
-      expect(result.trim()).toBe(";");
+      assert.strictEqual(result.length, input.length);
+      assert.strictEqual(result[0], ";");
+      assert.strictEqual(result.trim(), ";");
     });
 
     it("erases infer in conditional type alias", () => {
       const input = `type Unpack<T> = T extends Array<infer U> ? U : T`;
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result[0]).toBe(";");
-      expect(result.trim()).toBe(";");
+      assert.strictEqual(result.length, input.length);
+      assert.strictEqual(result[0], ";");
+      assert.strictEqual(result.trim(), ";");
     });
   });
 
@@ -1105,8 +1106,8 @@ describe("eraseTsTypes", () => {
     it("erases template literal type alias", () => {
       const input = "type Greeting = `hello ${string}`";
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result[0]).toBe(";");
+      assert.strictEqual(result.length, input.length);
+      assert.strictEqual(result[0], ";");
     });
   });
 
@@ -1130,16 +1131,16 @@ describe("eraseTsTypes", () => {
     it("erases type alias with index signature", () => {
       const input = `type Dict = { [key: string]: number }`;
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result[0]).toBe(";");
-      expect(result.trim()).toBe(";");
+      assert.strictEqual(result.length, input.length);
+      assert.strictEqual(result[0], ";");
+      assert.strictEqual(result.trim(), ";");
     });
 
     it("erases type alias with template literal keys", () => {
       const input = "type Events = { [K in `on${string}`]: Function }";
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result[0]).toBe(";");
+      assert.strictEqual(result.length, input.length);
+      assert.strictEqual(result[0], ";");
     });
   });
 
@@ -1251,7 +1252,7 @@ describe("eraseTsTypes", () => {
     it("erases export declare", () => {
       const input = `export declare const x: string`;
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
+      assert.strictEqual(result.length, input.length);
     });
   });
 
@@ -1259,7 +1260,7 @@ describe("eraseTsTypes", () => {
     it("erases inline type in export braces", () => {
       const input = `export { type Foo, bar }`;
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
+      assert.strictEqual(result.length, input.length);
     });
 
     it("erases export interface", () => {
@@ -1274,9 +1275,9 @@ describe("eraseTsTypes", () => {
     it("erases import type with generic module specifier", () => {
       const input = `import type { Map } from "immutable"`;
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result[0]).toBe(";");
-      expect(result.trim()).toBe(";");
+      assert.strictEqual(result.length, input.length);
+      assert.strictEqual(result[0], ";");
+      assert.strictEqual(result.trim(), ";");
     });
 
     it("erases inline type specifier but keeps 'as' rename artifact", () => {
@@ -1451,7 +1452,7 @@ describe("eraseTsTypes", () => {
     it("erases satisfies on object literal partially", () => {
       const input = `const x = { a: 1 } satisfies Record<string, number>`;
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
+      assert.strictEqual(result.length, input.length);
     });
 
     it("handles multiline arrow with types", () => {
@@ -1464,11 +1465,11 @@ describe("eraseTsTypes", () => {
         `}`,
       ].join("\n");
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result).toContain("return true");
-      expect(result).not.toContain(": string");
-      expect(result).not.toContain(": number");
-      expect(result).not.toContain(": boolean");
+      assert.strictEqual(result.length, input.length);
+      assert.ok(result.includes("return true"));
+      assert.ok(!result.includes(": string"));
+      assert.ok(!result.includes(": number"));
+      assert.ok(!result.includes(": boolean"));
     });
 
     it("handles callback parameter with function type", () => {
@@ -1518,18 +1519,18 @@ describe("eraseTsTypes", () => {
     it("erases multiline type alias", () => {
       const input = "type Config = {\n  host: string\n  port: number\n}";
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result[0]).toBe(";");
-      expect(result).not.toContain("host");
+      assert.strictEqual(result.length, input.length);
+      assert.strictEqual(result[0], ";");
+      assert.ok(!result.includes("host"));
     });
 
     it("erases multiline interface with methods", () => {
       const input =
         "interface Api {\n  get(id: string): Promise<Item>\n  set(id: string, value: Item): void\n}";
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result[0]).toBe(";");
-      expect(result).not.toContain("get");
+      assert.strictEqual(result.length, input.length);
+      assert.strictEqual(result[0], ";");
+      assert.ok(!result.includes("get"));
     });
 
     it("erases interface with optional properties", () => {
@@ -1717,7 +1718,7 @@ describe("eraseTsTypes", () => {
     it("handles satisfies followed by property access", () => {
       const input = `const x = (obj satisfies Foo).bar`;
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
+      assert.strictEqual(result.length, input.length);
     });
 
     it("handles as with intersection type", () => {
@@ -1749,9 +1750,9 @@ describe("eraseTsTypes", () => {
     it("erases import type star as namespace", () => {
       const input = `import type * as Types from "./types"`;
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result[0]).toBe(";");
-      expect(result.trim()).toBe(";");
+      assert.strictEqual(result.length, input.length);
+      assert.strictEqual(result[0], ";");
+      assert.strictEqual(result.trim(), ";");
     });
 
     it("preserves export with 'as' rename of multiple items", () => {
@@ -1762,9 +1763,9 @@ describe("eraseTsTypes", () => {
     it("erases export type with 'from' clause", () => {
       const input = `export type { Config } from "./config"`;
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result[0]).toBe(";");
-      expect(result.trim()).toBe(";");
+      assert.strictEqual(result.length, input.length);
+      assert.strictEqual(result[0], ";");
+      assert.strictEqual(result.trim(), ";");
     });
 
     it("preserves re-export star", () => {
@@ -1786,14 +1787,14 @@ describe("eraseTsTypes", () => {
     it("handles tab-indented interface", () => {
       const input = "\tinterface Foo { x: number }";
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result.trim()).toBe(";");
+      assert.strictEqual(result.length, input.length);
+      assert.strictEqual(result.trim(), ";");
     });
 
     it("handles CRLF line endings in multiline interface", () => {
       const input = "interface Foo {\r\n  bar: string\r\n}";
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
+      assert.strictEqual(result.length, input.length);
     });
 
     it("handles multiple blank lines between constructs", () => {
@@ -1891,8 +1892,8 @@ describe("eraseTsTypes", () => {
     it("does not erase export when type is not followed by = or <", () => {
       const input = `export type\nconst x = 1`;
       const result = eraseTsTypes(input);
-      expect(result.length).toBe(input.length);
-      expect(result).toContain("const x = 1");
+      assert.strictEqual(result.length, input.length);
+      assert.ok(result.includes("const x = 1"));
     });
   });
 

@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { nodeFromWebHandler } from "../nodeFromWebHandler.ts";
 
@@ -27,8 +28,8 @@ describe("nodeFromWebHandler", () => {
     const { port, close } = await listen(handler);
     try {
       const res = await fetch(`http://localhost:${port}/hello`);
-      expect(res.status).toBe(200);
-      expect(await res.text()).toBe("OK GET /hello");
+      assert.strictEqual(res.status, 200);
+      assert.strictEqual(await res.text(), "OK GET /hello");
     } finally {
       close();
     }
@@ -41,8 +42,8 @@ describe("nodeFromWebHandler", () => {
     const { port, close } = await listen(handler);
     try {
       const res = await fetch(`http://localhost:${port}/missing`);
-      expect(res.status).toBe(404);
-      expect(await res.text()).toBe("Not Found");
+      assert.strictEqual(res.status, 404);
+      assert.strictEqual(await res.text(), "Not Found");
     } finally {
       close();
     }
@@ -57,8 +58,8 @@ describe("nodeFromWebHandler", () => {
     const { port, close } = await listen(handler);
     try {
       const res = await fetch(`http://localhost:${port}/`);
-      expect(res.headers.get("x-custom")).toBe("test-value");
-      expect(res.headers.get("content-type")).toBe("text/plain");
+      assert.strictEqual(res.headers.get("x-custom"), "test-value");
+      assert.strictEqual(res.headers.get("content-type"), "text/plain");
     } finally {
       close();
     }
@@ -75,7 +76,7 @@ describe("nodeFromWebHandler", () => {
       await fetch(`http://localhost:${port}/`, {
         headers: { authorization: "Bearer token123" },
       });
-      expect(receivedAuth).toBe("Bearer token123");
+      assert.strictEqual(receivedAuth, "Bearer token123");
     } finally {
       close();
     }
@@ -92,8 +93,8 @@ describe("nodeFromWebHandler", () => {
         method: "POST",
         body: "hello from client",
       });
-      expect(res.status).toBe(200);
-      expect(await res.text()).toBe("hello from client");
+      assert.strictEqual(res.status, 200);
+      assert.strictEqual(await res.text(), "hello from client");
     } finally {
       close();
     }
@@ -106,8 +107,8 @@ describe("nodeFromWebHandler", () => {
     const { port, close } = await listen(handler);
     try {
       const res = await fetch(`http://localhost:${port}/`);
-      expect(res.status).toBe(500);
-      expect(await res.text()).toBe("Internal Server Error");
+      assert.strictEqual(res.status, 500);
+      assert.strictEqual(await res.text(), "Internal Server Error");
     } finally {
       close();
     }
@@ -120,7 +121,7 @@ describe("nodeFromWebHandler", () => {
     const { port, close } = await listen(handler);
     try {
       const res = await fetch(`http://localhost:${port}/`);
-      expect(res.status).toBe(204);
+      assert.strictEqual(res.status, 204);
     } finally {
       close();
     }
@@ -135,7 +136,7 @@ describe("nodeFromWebHandler", () => {
     const { port, close } = await listen(handler);
     try {
       await fetch(`http://localhost:${port}/path?foo=bar&a=1`);
-      expect(receivedSearch).toBe("?foo=bar&a=1");
+      assert.strictEqual(receivedSearch, "?foo=bar&a=1");
     } finally {
       close();
     }
@@ -154,8 +155,8 @@ describe("nodeFromWebHandler", () => {
         method: "PUT",
         body: "data",
       });
-      expect(receivedMethod).toBe("PUT");
-      expect(await res.text()).toBe("data");
+      assert.strictEqual(receivedMethod, "PUT");
+      assert.strictEqual(await res.text(), "data");
     } finally {
       close();
     }
