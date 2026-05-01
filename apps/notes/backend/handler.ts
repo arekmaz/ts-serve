@@ -119,8 +119,13 @@ async function handleRequest(request: Request): Promise<Response | null> {
     return jsonResponse(note, 201);
   }
 
+  const id = matched.id;
+  if (!id) {
+    return null;
+  }
+
   if (matched.route === "get") {
-    const note = getStmt.get(matched.id) as Note | undefined;
+    const note = getStmt.get(id) as Note | undefined;
     if (!note) {
       return emptyResponse(404);
     }
@@ -128,7 +133,7 @@ async function handleRequest(request: Request): Promise<Response | null> {
   }
 
   if (matched.route === "update") {
-    const existing = getStmt.get(matched.id) as Note | undefined;
+    const existing = getStmt.get(id) as Note | undefined;
     if (!existing) {
       return emptyResponse(404);
     }
@@ -137,21 +142,21 @@ async function handleRequest(request: Request): Promise<Response | null> {
       body?: string;
     };
     if (patch.title !== undefined) {
-      updateTitleStmt.run(patch.title, matched.id);
+      updateTitleStmt.run(patch.title, id);
     }
     if (patch.body !== undefined) {
-      updateBodyStmt.run(patch.body, matched.id);
+      updateBodyStmt.run(patch.body, id);
     }
-    const updated = getStmt.get(matched.id) as Note;
+    const updated = getStmt.get(id) as Note;
     return jsonResponse(updated);
   }
 
   if (matched.route === "delete") {
-    const existing = getStmt.get(matched.id) as Note | undefined;
+    const existing = getStmt.get(id) as Note | undefined;
     if (!existing) {
       return emptyResponse(404);
     }
-    deleteStmt.run(matched.id);
+    deleteStmt.run(id);
     return emptyResponse(204);
   }
 
