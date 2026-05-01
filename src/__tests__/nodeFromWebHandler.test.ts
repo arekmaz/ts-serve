@@ -161,4 +161,52 @@ describe("nodeFromWebHandler", () => {
       close();
     }
   });
+
+  it("preserves multiple set-cookie headers", async () => {
+    const handler = nodeFromWebHandler(async function cookies() {
+      const h = new Headers();
+      h.append("set-cookie", "a=1; Path=/");
+      h.append("set-cookie", "b=2; Path=/");
+      return new Response("ok", { headers: h });
+    });
+    const { port, close } = await listen(handler);
+    try {
+      const res = await fetch(`http://localhost:${port}/`);
+      const cookies = res.headers.getSetCookie();
+      assert.strictEqual(cookies.length, 2);
+      assert.ok(cookies.some((c) => c.includes("a=1")));
+      assert.ok(cookies.some((c) => c.includes("b=2")));
+    } finally {
+      close();
+    }
+  });
+
+  it("provides abort signal that triggers on client disconnect", async () => {
+    let signalReceived = false;
+    const handler = nodeFromWebHandler(async function slow(req) {
+      req.signal.addEventListener("abort", function onAbort() {
+        signalReceived = true;
+      });
+      await new Promise(function wait(resolve) {
+        setTimeout(resolve, 500);
+      });
+      return new Response("ok");
+    });
+    const { port, close } = await listen(handler);
+    try {
+      const ac = new AbortController();
+      const req = fetch(`http://localhost:${port}/`, { signal: ac.signal });
+      await new Promise(function wait(resolve) {
+        setTimeout(resolve, 50);
+      });
+      ac.abort();
+      await req.catch(function ignore() {});
+      await new Promise(function wait(resolve) {
+        setTimeout(resolve, 100);
+      });
+      assert.strictEqual(signalReceived, true);
+    } finally {
+      close();
+    }
+  });
 });

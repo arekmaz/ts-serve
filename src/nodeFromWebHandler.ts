@@ -32,6 +32,12 @@ export function nodeFromWebHandler(
 
     const method = req.method ?? "GET";
     const hasBody = method !== "GET" && method !== "HEAD";
+
+    const abortController = new AbortController();
+    req.on("close", function onClose(): void {
+      abortController.abort();
+    });
+
     const body = hasBody ? readBody(req) : null;
 
     const init: RequestInitWithDuplex = {
@@ -39,6 +45,7 @@ export function nodeFromWebHandler(
       headers,
       body,
       duplex: hasBody ? "half" : undefined,
+      signal: abortController.signal,
     };
     const request = new Request(url, init);
 
@@ -47,7 +54,9 @@ export function nodeFromWebHandler(
         writeResponse(res, response);
       },
       function onError(): void {
-        res.writeHead(500, { "content-type": "text/plain" });
+        if (!res.headersSent) {
+          res.writeHead(500, { "content-type": "text/plain" });
+        }
         res.end("Internal Server Error");
       },
     );
@@ -76,6 +85,9 @@ function writeResponse(res: ServerResponse, response: Response): void {
     value: string,
     key: string,
   ): void {
+    if (key === "set-cookie") {
+      return;
+    }
     const existing = headers[key];
     if (existing === undefined) {
       headers[key] = value;
@@ -87,6 +99,11 @@ function writeResponse(res: ServerResponse, response: Response): void {
     }
     headers[key] = [existing, value];
   });
+
+  const cookies = response.headers.getSetCookie();
+  if (cookies.length > 0) {
+    headers["set-cookie"] = cookies;
+  }
 
   res.writeHead(response.status, headers);
 
@@ -105,7 +122,11 @@ function writeResponse(res: ServerResponse, response: Response): void {
           res.end();
           return;
         }
-        res.write(value, pump);
+        if (!res.write(value)) {
+          res.once("drain", pump);
+          return;
+        }
+        pump();
       },
       function onError(): void {
         res.end();
