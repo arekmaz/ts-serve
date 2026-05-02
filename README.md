@@ -116,3 +116,33 @@ npm run todos   # start the example app
 | `fn<string>(x)`                   | `fn        (x)`                   |
 
 Every output is exactly the same length as the input. Every newline stays in place.
+
+# Benchmarks:
+
+`npm run benchmark`
+
+On Mac M1 Air:
+
+```
+Warmup: 500 iterations, Bench: 5000 iterations
+
+--- annotation-heavy.ts (4323 bytes) ---
+  eraseTsTypes: 0.2168ms/op (4,614 ops/s)
+  amaro      : 0.1625ms/op (6,154 ops/s)
+  eraseTsTypes is 0.75x slower
+
+--- mixed.ts (6120 bytes) ---
+  eraseTsTypes: 0.3037ms/op (3,292 ops/s)
+  amaro      : 0.1792ms/op (5,580 ops/s)
+  eraseTsTypes is 0.59x slower
+
+--- plain-js.ts (2553 bytes) ---
+  eraseTsTypes: 0.1496ms/op (6,687 ops/s)
+  amaro      : 0.0861ms/op (11,608 ops/s)
+  eraseTsTypes is 0.58x slower
+
+--- type-heavy.ts (3816 bytes) ---
+  eraseTsTypes: 0.0867ms/op (11,533 ops/s)
+  amaro      : 0.1319ms/op (7,583 ops/s)
+  eraseTsTypes is 1.52x faster
+```

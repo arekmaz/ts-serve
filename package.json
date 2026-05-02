@@ -16,6 +16,7 @@
     "notes-snabbdom": "npm start --prefix apps/notes-snabbdom",
     "notes-htmz": "npm start --prefix apps/notes-htmz",
     "notes-vanilla": "npm start --prefix apps/notes-vanilla",
-    "notes-lit": "npm start --prefix apps/notes-lit"
+    "notes-lit": "npm start --prefix apps/notes-lit",
+    "benchmark": "npm start --prefix benchmark"
   }
 }

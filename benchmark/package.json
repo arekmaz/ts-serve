@@ -1,0 +1,11 @@
+{
+  "name": "benchmark",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node run.ts"
+  },
+  "devDependencies": {
+    "amaro": "1.1.9"
+  }
+}
