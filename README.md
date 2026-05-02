@@ -127,22 +127,30 @@ On Mac M1 Air:
 Warmup: 500 iterations, Bench: 5000 iterations
 
 --- annotation-heavy.ts (4323 bytes) ---
-  eraseTsTypes: 0.2168ms/op (4,614 ops/s)
-  amaro      : 0.1625ms/op (6,154 ops/s)
-  eraseTsTypes is 0.75x slower
+  eraseTsTypes  : 0.2159ms/op (4,632 ops/s)
+  amaro         : 0.1621ms/op (6,168 ops/s)
+  ts-blank-space: 0.2101ms/op (4,759 ops/s)
+  eraseTsTypes vs amaro:          0.75x slower
+  eraseTsTypes vs ts-blank-space: 0.97x slower
 
 --- mixed.ts (6120 bytes) ---
-  eraseTsTypes: 0.3037ms/op (3,292 ops/s)
-  amaro      : 0.1792ms/op (5,580 ops/s)
-  eraseTsTypes is 0.59x slower
+  eraseTsTypes  : 0.3020ms/op (3,311 ops/s)
+  amaro         : 0.1796ms/op (5,567 ops/s)
+  ts-blank-space: 0.2772ms/op (3,608 ops/s)
+  eraseTsTypes vs amaro:          0.59x slower
+  eraseTsTypes vs ts-blank-space: 0.92x slower
 
 --- plain-js.ts (2553 bytes) ---
-  eraseTsTypes: 0.1496ms/op (6,687 ops/s)
-  amaro      : 0.0861ms/op (11,608 ops/s)
-  eraseTsTypes is 0.58x slower
+  eraseTsTypes  : 0.1490ms/op (6,713 ops/s)
+  amaro         : 0.0862ms/op (11,595 ops/s)
+  ts-blank-space: 0.1254ms/op (7,976 ops/s)
+  eraseTsTypes vs amaro:          0.58x slower
+  eraseTsTypes vs ts-blank-space: 0.84x slower
 
 --- type-heavy.ts (3816 bytes) ---
-  eraseTsTypes: 0.0867ms/op (11,533 ops/s)
-  amaro      : 0.1319ms/op (7,583 ops/s)
-  eraseTsTypes is 1.52x faster
+  eraseTsTypes  : 0.0868ms/op (11,527 ops/s)
+  amaro         : 0.1321ms/op (7,569 ops/s)
+  ts-blank-space: 0.1581ms/op (6,324 ops/s)
+  eraseTsTypes vs amaro:          1.52x faster
+  eraseTsTypes vs ts-blank-space: 1.82x faster
 ```

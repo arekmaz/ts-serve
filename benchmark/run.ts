@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { transformSync } from "amaro";
+import tsBlankSpace from "ts-blank-space";
 import { eraseTsTypes } from "../src/eraseTsTypes.ts";
 
 const fixturesDir = new URL("fixtures", import.meta.url).pathname;
@@ -38,14 +39,20 @@ console.log(`Warmup: ${WARMUP} iterations, Bench: ${ITERATIONS} iterations\n`);
 for (const fixture of fixtures) {
   console.log(`--- ${fixture.name} (${fixture.source.length} bytes) ---`);
 
-  const tErase = bench("eraseTsTypes", function runErase() {
+  const tErase = bench("eraseTsTypes  ", function runErase() {
     eraseTsTypes(fixture.source);
   });
 
-  const tAmaro = bench("amaro      ", function runAmaro() {
+  const tAmaro = bench("amaro         ", function runAmaro() {
     transformSync(fixture.source, { mode: "strip-only" });
   });
 
-  const ratio = tAmaro / tErase;
-  console.log(`  eraseTsTypes is ${ratio.toFixed(2)}x ${ratio > 1 ? "faster" : "slower"}\n`);
+  const tBlankSpace = bench("ts-blank-space", function runBlankSpace() {
+    tsBlankSpace(fixture.source);
+  });
+
+  const ratioAmaro = tAmaro / tErase;
+  const ratioBlankSpace = tBlankSpace / tErase;
+  console.log(`  eraseTsTypes vs amaro:          ${ratioAmaro.toFixed(2)}x ${ratioAmaro > 1 ? "faster" : "slower"}`);
+  console.log(`  eraseTsTypes vs ts-blank-space: ${ratioBlankSpace.toFixed(2)}x ${ratioBlankSpace > 1 ? "faster" : "slower"}\n`);
 }

@@ -6,6 +6,7 @@
     "start": "node run.ts"
   },
   "devDependencies": {
-    "amaro": "1.1.9"
+    "amaro": "1.1.9",
+    "ts-blank-space": "0.8.0"
   }
 }
