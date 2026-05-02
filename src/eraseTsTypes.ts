@@ -259,6 +259,16 @@ function findStatementEnd(source: string, pos: number): number {
       return pos + 1;
     }
     if (depth === 0 && ch === "\n") {
+      const prevCh = prevNonWhitespace(source, pos);
+      if (prevCh === "=" || prevCh === "|" || prevCh === "&" || prevCh === ",") {
+        pos++;
+        continue;
+      }
+      const nextPos = skipWhitespace(source, pos + 1);
+      if (nextPos < source.length && (source[nextPos] === "|" || source[nextPos] === "&")) {
+        pos++;
+        continue;
+      }
       return pos;
     }
     pos++;
@@ -267,6 +277,7 @@ function findStatementEnd(source: string, pos: number): number {
 }
 
 function scanImportStatement(source: string, pos: number): number {
+  let braceDepth = 0;
   while (pos < source.length) {
     if (source[pos] === "'" || source[pos] === '"') {
       pos = skipString(source, pos);
@@ -275,10 +286,20 @@ function scanImportStatement(source: string, pos: number): number {
       }
       return pos;
     }
+    if (source[pos] === "{") {
+      braceDepth++;
+      pos++;
+      continue;
+    }
+    if (source[pos] === "}") {
+      braceDepth--;
+      pos++;
+      continue;
+    }
     if (source[pos] === ";") {
       return pos + 1;
     }
-    if (source[pos] === "\n") {
+    if (source[pos] === "\n" && braceDepth === 0) {
       return pos;
     }
     pos++;
@@ -405,6 +426,28 @@ function isInsideObjectLiteral(source: string, colonPos: number): boolean {
   return false;
 }
 
+function isVarDeclComma(source: string, colonPos: number): boolean {
+  let i = colonPos - 1;
+  while (i >= 0) {
+    const ch = source[i];
+    if (ch === ";" || ch === "{" || ch === "}") {
+      return false;
+    }
+    if (isIdentChar(ch)) {
+      const kwEnd = i + 1;
+      while (i >= 0 && isIdentChar(source[i])) {
+        i--;
+      }
+      const kw = source.slice(i + 1, kwEnd);
+      if (kw === "let" || kw === "const" || kw === "var") {
+        return true;
+      }
+    }
+    i--;
+  }
+  return false;
+}
+
 function isTypeAnnotationContext(
   source: string,
   colonPos: number,
@@ -489,6 +532,11 @@ function isTypeAnnotationContext(
     braceDepth > 0 &&
     (beforeIdent === "{" || beforeIdent === "," || beforeIdent === ";")
   ) {
+    if (beforeIdent === ",") {
+      if (isVarDeclComma(source, colonPos)) {
+        return true;
+      }
+    }
     return false;
   }
 
@@ -576,8 +624,91 @@ function isInsideImportExportBraces(source: string, pos: number): boolean {
   return false;
 }
 
+function findTypeAliasEnd(source: string, pos: number): number {
+  let depth = 0;
+  while (pos < source.length) {
+    const opaque = skipOpaqueAt(source, pos);
+    if (opaque !== -1) {
+      pos = opaque;
+      continue;
+    }
+    const ch = source[pos];
+    if (ch === "=" && pos + 1 < source.length && source[pos + 1] === ">") {
+      pos += 2;
+      continue;
+    }
+    if (ch === "{" || ch === "(" || ch === "[" || ch === "<") {
+      depth++;
+      pos++;
+      continue;
+    }
+    if (ch === "}" || ch === ")" || ch === "]" || ch === ">") {
+      depth--;
+      if (depth < 0) {
+        return pos;
+      }
+      pos++;
+      continue;
+    }
+    if (depth === 0 && ch === ";") {
+      return pos + 1;
+    }
+    if (depth === 0 && ch === "\n") {
+      const nextPos = skipWhitespace(source, pos + 1);
+      if (nextPos < source.length && (source[nextPos] === "|" || source[nextPos] === "&")) {
+        pos++;
+        continue;
+      }
+      const prevCh = prevNonWhitespace(source, pos);
+      if (prevCh === "=" || prevCh === "|" || prevCh === "&" || prevCh === ",") {
+        pos++;
+        continue;
+      }
+      return pos;
+    }
+    pos++;
+  }
+  return pos;
+}
+
+function isFunctionOverload(source: string, pos: number): boolean {
+  let p = skipWhitespace(source, pos);
+  const len = source.length;
+  if (p < len && source[p] === "*") {
+    p = skipWhitespace(source, p + 1);
+  }
+  while (p < len && isIdentChar(source[p])) {
+    p++;
+  }
+  p = skipWhitespace(source, p);
+  if (p >= len || source[p] !== "(") {
+    return false;
+  }
+  let depth = 1;
+  p++;
+  while (p < len && depth > 0) {
+    if (source[p] === "(") {
+      depth++;
+    }
+    if (source[p] === ")") {
+      depth--;
+    }
+    if (source[p] === "'" || source[p] === '"') {
+      p = skipString(source, p);
+      continue;
+    }
+    p++;
+  }
+  p = skipWhitespace(source, p);
+  if (p < len && source[p] === ":") {
+    p = scanTypeExpression(source, p + 1, ";{\n");
+  }
+  p = skipWhitespace(source, p);
+  return p < len && source[p] === ";";
+}
+
 function isPostfixExpressionEnd(ch: string): boolean {
-  return isIdentChar(ch) || ch === ")" || ch === "]" || ch === '"' || ch === "'" || ch === "`";
+  return isIdentChar(ch) || ch === ")" || ch === "]" || ch === "}" || ch === '"' || ch === "'" || ch === "`";
 }
 
 function tryErasePostfixKeyword(
@@ -794,7 +925,10 @@ export function eraseTsTypes(source: string): string {
       isTypeAnnotationContext(source, pos, parenDepth, braceDepth)
     ) {
       const terminators = getTypeAnnotationTerminators(source, pos, parenDepth);
-      const start = pos;
+      let start = pos;
+      if (parenDepth > 0 && start > 0 && source[start - 1] === "?") {
+        start--;
+      }
       pos++;
       pos = skipWhitespace(source, pos);
       if (terminators.includes("{")) {
@@ -806,6 +940,14 @@ export function eraseTsTypes(source: string): string {
         blankRange(chars, start, end, false);
         pos = end;
       }
+      continue;
+    }
+
+    if (matchWord(source, pos, "function") && !isAfterDot(source, pos) && isFunctionOverload(source, pos + 8)) {
+      const start = pos;
+      const end = findStatementEnd(source, pos + 8);
+      blankRange(chars, start, end, true);
+      pos = end;
       continue;
     }
 
@@ -832,7 +974,7 @@ export function eraseTsTypes(source: string): string {
           afterIdent < len &&
           (source[afterIdent] === "=" || source[afterIdent] === "<")
         ) {
-          const end = findStatementEnd(source, afterIdent);
+          const end = findTypeAliasEnd(source, afterIdent);
           blankRange(chars, start, end, true);
           pos = end;
           continue;
@@ -895,12 +1037,30 @@ export function eraseTsTypes(source: string): string {
             afterIdent = skipWhitespace(source, afterIdent);
           }
           if (afterIdent < len && source[afterIdent] === "=") {
-            const end = findStatementEnd(source, afterIdent);
+            const end = findTypeAliasEnd(source, afterIdent);
             blankRange(chars, exportStart, end, true);
             pos = end;
             continue;
           }
         }
+      }
+      if (matchWord(source, afterExport, "function") && isFunctionOverload(source, afterExport + 8)) {
+        const end = findStatementEnd(source, afterExport + 8);
+        blankRange(chars, exportStart, end, true);
+        pos = end;
+        continue;
+      }
+      if (matchWord(source, afterExport, "interface") && !isAfterDot(source, afterExport)) {
+        const end = findStatementEnd(source, afterExport + 9);
+        blankRange(chars, exportStart, end, true);
+        pos = end;
+        continue;
+      }
+      if (matchWord(source, afterExport, "declare") && !isAfterDot(source, afterExport)) {
+        const end = findStatementEnd(source, afterExport + 7);
+        blankRange(chars, exportStart, end, true);
+        pos = end;
+        continue;
       }
       pos = afterExport;
       continue;
@@ -958,7 +1118,7 @@ export function eraseTsTypes(source: string): string {
       const prev = prevNonWhitespace(source, pos);
       if (isIdentChar(prev) || prev === ")" || prev === "]") {
         const next = pos + 1 < len ? source[pos + 1] : "";
-        if (next === "." || next === "[") {
+        if (next !== "=" && next !== "!") {
           chars[pos] = " ";
           pos++;
           continue;

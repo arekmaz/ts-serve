@@ -12,6 +12,8 @@
     "test": "node --test src/__tests__/*.test.ts",
     "typecheck": "tsc",
     "todos": "npm start --prefix apps/todos",
-    "notes": "npm start --prefix apps/notes"
+    "notes": "npm start --prefix apps/notes",
+    "notes-snabbdom": "npm start --prefix apps/notes-snabbdom",
+    "notes-htmz": "npm start --prefix apps/notes-htmz"
   }
 }

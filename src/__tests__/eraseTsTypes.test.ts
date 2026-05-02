@@ -77,7 +77,7 @@ describe("eraseTsTypes", () => {
     it("erases optional parameter annotation", () => {
       expectErasure(
         `function foo(x?: number) {}`,
-        `function foo(x?        ) {}`,
+        `function foo(x         ) {}`,
       );
     });
 
@@ -483,13 +483,16 @@ describe("eraseTsTypes", () => {
       expectErasure(`foo()!.bar`, `foo() .bar`);
     });
 
+    it("erases non-null assertion before function call", () => {
+      expectErasure(`obj.fn!(x)`, `obj.fn (x)`);
+    });
+
     it("erases non-null assertion on array access", () => {
       expectErasure(`arr[0]!.x`, `arr[0] .x`);
     });
 
-    it("does not erase non-null assertion before closing paren", () => {
-      const input = `foo(x!)`;
-      expectErasure(input, input);
+    it("erases non-null assertion before closing paren", () => {
+      expectErasure(`foo(x!)`, `foo(x )`);
     });
   });
 
@@ -1266,7 +1269,22 @@ describe("eraseTsTypes", () => {
     it("erases export interface", () => {
       expectErasure(
         `export interface Foo { x: number }`,
-        `export ;                          `,
+        `;                                 `,
+      );
+    });
+
+    it("erases multiline export interface", () => {
+      const input = `export interface DOMAPI {\n  createElement(tag: string): Element\n}`;
+      const result = eraseTsTypes(input);
+      assert.strictEqual(result.length, input.length);
+      assert.ok(!result.includes("DOMAPI"));
+      assert.ok(!result.includes("createElement"));
+    });
+
+    it("erases export declare", () => {
+      expectErasure(
+        `export declare const x: number`,
+        `;                             `,
       );
     });
   });
@@ -1422,6 +1440,13 @@ describe("eraseTsTypes", () => {
       );
     });
 
+    it("handles comma-separated let declarations with types inside function", () => {
+      expectErasure(
+        `function f() { let i: any, elm: Node, parent: Node; }`,
+        `function f() { let i     , elm      , parent      ; }`,
+      );
+    });
+
     it("handles optional chaining (not confused with type annotation)", () => {
       const input = `const x = obj?.foo?.bar`;
       expectErasure(input, input);
@@ -1437,9 +1462,11 @@ describe("eraseTsTypes", () => {
       expectErasure(input, input);
     });
 
-    it("does not erase as const on object literal (as not after identifier)", () => {
-      const input = `const x = { a: 1, b: 2 } as const`;
-      expectErasure(input, input);
+    it("erases as const on object literal", () => {
+      expectErasure(
+        `const x = { a: 1, b: 2 } as const`,
+        `const x = { a: 1, b: 2 }         `,
+      );
     });
 
     it("handles as const on array literal", () => {
@@ -1766,6 +1793,24 @@ describe("eraseTsTypes", () => {
       assert.strictEqual(result.length, input.length);
       assert.strictEqual(result[0], ";");
       assert.strictEqual(result.trim(), ";");
+    });
+
+    it("erases multiline export type with 'from' clause", () => {
+      const input = `export type {\n  Foo,\n  Bar,\n  Baz\n} from "./types"`;
+      const result = eraseTsTypes(input);
+      assert.strictEqual(result.length, input.length);
+      assert.ok(!result.includes("Foo"));
+      assert.ok(!result.includes("Bar"));
+      assert.ok(!result.includes("types"));
+    });
+
+    it("erases multiline import type", () => {
+      const input = `import type {\n  Foo,\n  Bar\n} from "./types"`;
+      const result = eraseTsTypes(input);
+      assert.strictEqual(result.length, input.length);
+      assert.ok(!result.includes("Foo"));
+      assert.ok(!result.includes("Bar"));
+      assert.ok(!result.includes("types"));
     });
 
     it("preserves re-export star", () => {
