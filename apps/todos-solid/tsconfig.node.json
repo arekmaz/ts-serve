@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["serve.ts"]
+  "include": ["serve.ts", "backend"]
 }

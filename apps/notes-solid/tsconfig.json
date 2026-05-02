@@ -1,13 +1,7 @@
 {
-  "compilerOptions": {
-    "strict": true,
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "noEmit": true,
-    "erasableSyntaxOnly": true,
-    "allowImportingTsExtensions": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"]
-  },
-  "include": ["frontend/src"]
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.frontend.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
 }

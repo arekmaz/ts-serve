@@ -1,5 +1,5 @@
 {
-  "name": "notes-snabbdom",
+  "name": "notes-lit",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,6 +8,6 @@
     "start": "node serve.ts"
   },
   "devDependencies": {
-    "snabbdom": "3.6.3"
+    "lit": "3.3.2"
   }
 }

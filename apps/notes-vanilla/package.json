@@ -1,13 +1,10 @@
 {
-  "name": "notes-snabbdom",
+  "name": "notes-vanilla",
   "private": true,
   "type": "module",
   "scripts": {
     "typecheck": "tsc -p tsconfig.frontend.json && tsc -p tsconfig.node.json",
     "dev": "node --watch serve.ts",
     "start": "node serve.ts"
-  },
-  "devDependencies": {
-    "snabbdom": "3.6.3"
   }
 }

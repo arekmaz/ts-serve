@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc",
+    "typecheck": "tsc -p tsconfig.frontend.json && tsc -p tsconfig.node.json",
     "dev": "node --watch serve.ts",
     "start": "node serve.ts"
   },

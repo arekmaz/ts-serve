@@ -14,6 +14,8 @@
     "todos": "npm start --prefix apps/todos",
     "notes": "npm start --prefix apps/notes",
     "notes-snabbdom": "npm start --prefix apps/notes-snabbdom",
-    "notes-htmz": "npm start --prefix apps/notes-htmz"
+    "notes-htmz": "npm start --prefix apps/notes-htmz",
+    "notes-vanilla": "npm start --prefix apps/notes-vanilla",
+    "notes-lit": "npm start --prefix apps/notes-lit"
   }
 }
