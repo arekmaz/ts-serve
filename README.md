@@ -1,6 +1,8 @@
-# ts-serve
+# ts-erase
 
-Serve TypeScript directly to the browser. No bundler, no build step, no transpiler — just erase the types and ship it.
+A utility to erase typescript types, single file, no dependencies.
+
+Allows you to serve TypeScript directly to the browser. No bundler, no build step, no transpiler — just erase the types and ship it.
 Provided as a bunch of single-file-dependencies composed together.
 No external dependencies - only Node.js version that can run typescript natively is required.
 
