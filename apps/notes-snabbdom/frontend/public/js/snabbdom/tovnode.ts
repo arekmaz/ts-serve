@@ -1,6 +1,6 @@
 import { addNS } from "./h.ts";
-import { vnode, VNode } from "./vnode.ts";
-import { htmlDomApi, DOMAPI } from "./htmldomapi.ts";
+import { vnode, type VNode } from "./vnode.ts";
+import { htmlDomApi, type DOMAPI } from "./htmldomapi.ts";
 
 /**
  * Transforms the given attribute name into a valid dataset property key

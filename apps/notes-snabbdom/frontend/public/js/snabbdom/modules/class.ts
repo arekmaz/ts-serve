@@ -1,5 +1,5 @@
-import { VNode, VNodeData } from "../vnode.ts";
-import { Module } from "./module.ts";
+import type { VNode, VNodeData } from "../vnode.ts";
+import type { Module } from "./module.ts";
 
 export type Classes = Record<string, boolean>;
 

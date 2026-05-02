@@ -1,7 +1,7 @@
-import { Module } from "./modules/module.ts";
-import { Key, vnode, VNode } from "./vnode.ts";
+import type { Module } from "./modules/module.ts";
+import { type Key, vnode, type VNode } from "./vnode.ts";
 import * as is from "./is.ts";
-import { htmlDomApi, DOMAPI } from "./htmldomapi.ts";
+import { htmlDomApi, type DOMAPI } from "./htmldomapi.ts";
 
 type VNodeQueue = VNode[];
 

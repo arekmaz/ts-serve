@@ -1,11 +1,11 @@
-import { Hooks } from "./hooks.ts";
-import { AttachData } from "./helpers/attachto.ts";
-import { VNodeStyle } from "./modules/style.ts";
-import { On } from "./modules/eventlisteners.ts";
-import { Attrs } from "./modules/attributes.ts";
-import { Classes } from "./modules/class.ts";
-import { Props } from "./modules/props.ts";
-import { Dataset } from "./modules/dataset.ts";
+import type { Hooks } from "./hooks.ts";
+import type { AttachData } from "./helpers/attachto.ts";
+import type { VNodeStyle } from "./modules/style.ts";
+import type { On } from "./modules/eventlisteners.ts";
+import type { Attrs } from "./modules/attributes.ts";
+import type { Classes } from "./modules/class.ts";
+import type { Props } from "./modules/props.ts";
+import type { Dataset } from "./modules/dataset.ts";
 
 export type Key = PropertyKey;
 

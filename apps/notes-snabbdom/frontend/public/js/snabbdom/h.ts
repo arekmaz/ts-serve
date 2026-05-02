@@ -1,4 +1,4 @@
-import { vnode, VNode, VNodeData } from "./vnode.ts";
+import { vnode, type VNode, type VNodeData } from "./vnode.ts";
 import * as is from "./is.ts";
 
 export type VNodes = VNode[];
